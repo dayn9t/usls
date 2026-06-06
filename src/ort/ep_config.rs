@@ -34,7 +34,7 @@ impl Default for CudaConfig {
     fn default() -> Self {
         Self {
             cuda_graph: false,
-            fuse_conv_bias: false,
+            fuse_conv_bias: true,
             conv_max_workspace: true,
             tf32: true,
             prefer_nhwc: true,
