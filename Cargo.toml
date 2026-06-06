@@ -1,0 +1,321 @@
+[package]
+name = "usls"
+edition = "2021"
+version = "0.2.0-alpha.3"
+rust-version = "1.88"
+description = "A Rust library integrated with ONNXRuntime, providing a collection of ML models."
+repository = "https://github.com/jamjamjon/usls"
+authors = ["Jamjamjon <xxyydzml@outlook.com>"]
+license = "MIT"
+readme = "README.md"
+exclude = ["assets/*", "docs/*", "examples/*", "runs/*", "benches/*", "tests/*", "site/*"]
+
+
+[dependencies]
+anyhow = { version = "1" }
+aksr = { version = "0.0.7" }
+image = { version = "0.25", default-features = false, features = [
+  "jpeg", "png", "webp", "rayon"
+] }
+imageproc = { version = "0.25", default-features = false, features = ["rayon"], optional = true }
+ab_glyph = { version = "0.2.32", optional = true }
+ndarray = { version = "0.17", features = ["rayon"] }
+half = { version = "2.7.1", features = ["bytemuck", "num-traits"] }
+indicatif = { version = "0.18", default-features = false }
+tracing = { version = "0.1" }
+prost = { version = "0.14.1" }
+paste = { version = "1.0.15" }
+num-traits = "0.2.19"
+rand = { version = "0.9" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0" }
+rayon = { version = "1.10.0" }
+bytemuck = { version = "1.19", features = ["derive"] }
+glob = { version = "0.3.3" }
+dirs = { version = "6.0.0" }
+chrono = { version = "0.4.40", default-features = false, features = ["clock", "std"] }
+regex = { version = "1.12.2" }
+tempfile = { version = "3.23.0" }
+fast_image_resize = { version = "5.5.0", default-features = false, features = ["image", "rayon"] }
+minifb = { version = "0.28.0", optional = true }
+video-rs = { version = "0.10.5", features = ["ndarray"], optional = true }
+ndarray-npy = { version = "0.10", optional = true  }
+ort = { version = "=2.0.0-rc.12", default-features = false, features = [
+  "tls-rustls",
+  "copy-dylibs",
+  "half",
+  "std",
+] }
+cudarc = { version = "0.19", optional = true, default-features = false, features = [
+  "driver", 
+  "nvrtc", 
+  "dynamic-linking"
+] }
+ureq = { version = "3.1.4", default-features = false, features = ["rustls", "gzip"] }
+hf-hub = { version = "0.4.3", default-features = false, features = ["ureq", "rustls-tls"], optional = true }
+tokenizers = { version = "0.22.1", optional = true }
+lru = { version = "0.16.2", default-features = false }
+
+
+[dev-dependencies]
+clap = { version = "4.5", features = ["derive"] }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "chrono", "fmt", "ansi"] }
+
+[profile.dev]
+opt-level = 0
+incremental = true
+debug = 1
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+# codegen-units = 1
+panic = "abort"
+debug = false
+strip = true
+
+
+[features]
+default = ["ort-download-binaries", "vision", "annotator"]
+
+# ONNXRuntime loading strategies
+ort-download-binaries = ["ort/download-binaries"]
+ort-load-dynamic = ["ort/load-dynamic"] 
+
+# Cuda features (Internal use)
+cuda-runtime = ["dep:cudarc"]
+cuda-runtime-11040 = ["cuda-runtime", "cudarc/cuda-11040"]
+cuda-runtime-11050 = ["cuda-runtime", "cudarc/cuda-11050"]
+cuda-runtime-11060 = ["cuda-runtime", "cudarc/cuda-11060"]
+cuda-runtime-11070 = ["cuda-runtime", "cudarc/cuda-11070"]
+cuda-runtime-11080 = ["cuda-runtime", "cudarc/cuda-11080"]
+cuda-runtime-12000 = ["cuda-runtime", "cudarc/cuda-12000"]
+cuda-runtime-12010 = ["cuda-runtime", "cudarc/cuda-12010"]
+cuda-runtime-12020 = ["cuda-runtime", "cudarc/cuda-12020"]
+cuda-runtime-12030 = ["cuda-runtime", "cudarc/cuda-12030"]
+cuda-runtime-12040 = ["cuda-runtime", "cudarc/cuda-12040"]
+cuda-runtime-12050 = ["cuda-runtime", "cudarc/cuda-12050"]
+cuda-runtime-12060 = ["cuda-runtime", "cudarc/cuda-12060"]
+cuda-runtime-12080 = ["cuda-runtime", "cudarc/cuda-12080"]
+cuda-runtime-12090 = ["cuda-runtime", "cudarc/cuda-12090"]
+cuda-runtime-13000 = ["cuda-runtime", "cudarc/cuda-13000"]
+cuda-runtime-13010 = ["cuda-runtime", "cudarc/cuda-13010"]
+cuda-runtime-build = ["cuda-runtime", "cudarc/cuda-version-from-build-system"]
+
+# ONNXRuntime Execution providers
+acl = ["ort/acl"]
+armnn = ["ort/armnn"]
+azure = ["ort/azure"]
+cann = ["ort/cann"]
+coreml = ["ort/coreml"]
+webgpu = ["ort/webgpu"]
+directml = ["ort/directml"]
+migraphx = ["ort/migraphx"]
+nnapi = ["ort/nnapi"]
+onednn = ["ort/onednn"]
+openvino = ["ort/openvino"]
+qnn = ["ort/qnn"]
+rknpu = ["ort/rknpu"]
+rocm = ["ort/rocm"]
+tvm = ["ort/tvm"]
+vitis = ["ort/vitis"]
+xnnpack = ["ort/xnnpack"]
+cuda = ["ort/cuda"]
+cuda-full = ["cuda", "cuda-runtime-build"]
+cuda-11040 = ["cuda", "cuda-runtime-11040"]
+cuda-11050 = ["cuda", "cuda-runtime-11050"]
+cuda-11060 = ["cuda", "cuda-runtime-11060"]
+cuda-11070 = ["cuda", "cuda-runtime-11070"]
+cuda-11080 = ["cuda", "cuda-runtime-11080"]
+cuda-12000 = ["cuda", "cuda-runtime-12000"]
+cuda-12010 = ["cuda", "cuda-runtime-12010"]
+cuda-12020 = ["cuda", "cuda-runtime-12020"]
+cuda-12030 = ["cuda", "cuda-runtime-12030"]
+cuda-12040 = ["cuda", "cuda-runtime-12040"]
+cuda-12050 = ["cuda", "cuda-runtime-12050"]
+cuda-12060 = ["cuda", "cuda-runtime-12060"]
+cuda-12080 = ["cuda", "cuda-runtime-12080"]
+cuda-12090 = ["cuda", "cuda-runtime-12090"]
+cuda-13000 = ["cuda", "cuda-runtime-13000"]
+cuda-13010 = ["cuda", "cuda-runtime-13010"]
+tensorrt = ["ort/tensorrt"]
+tensorrt-full = ["tensorrt", "cuda-runtime-build"]
+tensorrt-cuda-11040 = ["tensorrt", "cuda-runtime-11040"]
+tensorrt-cuda-11050 = ["tensorrt", "cuda-runtime-11050"]
+tensorrt-cuda-11060 = ["tensorrt", "cuda-runtime-11060"]
+tensorrt-cuda-11070 = ["tensorrt", "cuda-runtime-11070"]
+tensorrt-cuda-11080 = ["tensorrt", "cuda-runtime-11080"]
+tensorrt-cuda-12000 = ["tensorrt", "cuda-runtime-12000"]
+tensorrt-cuda-12010 = ["tensorrt", "cuda-runtime-12010"]
+tensorrt-cuda-12020 = ["tensorrt", "cuda-runtime-12020"]
+tensorrt-cuda-12030 = ["tensorrt", "cuda-runtime-12030"]
+tensorrt-cuda-12040 = ["tensorrt", "cuda-runtime-12040"]
+tensorrt-cuda-12050 = ["tensorrt", "cuda-runtime-12050"]
+tensorrt-cuda-12060 = ["tensorrt", "cuda-runtime-12060"]
+tensorrt-cuda-12080 = ["tensorrt", "cuda-runtime-12080"]
+tensorrt-cuda-12090 = ["tensorrt", "cuda-runtime-12090"]
+tensorrt-cuda-13000 = ["tensorrt", "cuda-runtime-13000"]
+tensorrt-cuda-13010 = ["tensorrt", "cuda-runtime-13010"]
+nvrtx = ["ort/nvrtx"]
+nvrtx-full = ["nvrtx", "cuda-runtime-build"]
+nvrtx-cuda-11040 = ["nvrtx", "cuda-runtime-11040"]
+nvrtx-cuda-11050 = ["nvrtx", "cuda-runtime-11050"]
+nvrtx-cuda-11060 = ["nvrtx", "cuda-runtime-11060"]
+nvrtx-cuda-11070 = ["nvrtx", "cuda-runtime-11070"]
+nvrtx-cuda-11080 = ["nvrtx", "cuda-runtime-11080"]
+nvrtx-cuda-12000 = ["nvrtx", "cuda-runtime-12000"]
+nvrtx-cuda-12010 = ["nvrtx", "cuda-runtime-12010"]
+nvrtx-cuda-12020 = ["nvrtx", "cuda-runtime-12020"]
+nvrtx-cuda-12030 = ["nvrtx", "cuda-runtime-12030"]
+nvrtx-cuda-12040 = ["nvrtx", "cuda-runtime-12040"]
+nvrtx-cuda-12050 = ["nvrtx", "cuda-runtime-12050"]
+nvrtx-cuda-12060 = ["nvrtx", "cuda-runtime-12060"]
+nvrtx-cuda-12080 = ["nvrtx", "cuda-runtime-12080"]
+nvrtx-cuda-12090 = ["nvrtx", "cuda-runtime-12090"]
+nvrtx-cuda-13000 = ["nvrtx", "cuda-runtime-13000"]
+nvrtx-cuda-13010 = ["nvrtx", "cuda-runtime-13010"]
+
+
+# Video / Stream processing
+video = ["dep:video-rs"]
+
+# Viewer
+viewer = ["dep:minifb"]
+
+# Annotator
+annotator = ["dep:ab_glyph", "dep:imageproc"]
+
+# Additional image formats (optional for faster compilation)
+image-gif = ["image/gif"]
+image-bmp = ["image/bmp"] 
+image-ico = ["image/ico"]
+image-avif = ["image/avif"]
+image-tiff = ["image/tiff"]
+image-dds = ["image/dds"]
+image-exr = ["image/exr"]
+image-ff = ["image/ff"]
+image-hdr = ["image/hdr"]
+image-pnm = ["image/pnm"]
+image-qoi = ["image/qoi"]
+image-tga = ["image/tga"]
+image-all-formats = ["image/default-formats"]
+
+# Hugging Face hub support (for downloading models from Hugging Face)
+hf-hub = ["dep:hf-hub"]
+
+# Model Zoo
+vision = []
+vlm = ["vision", "dep:tokenizers", "dep:ndarray-npy"]
+mot = []
+all-models = ["vision", "vlm", "mot"]
+
+[[test]]
+name = "cuda_pad_consistency"
+path = "tests/cuda_pad_consistency.rs"
+required-features = ["cuda-runtime", "ort-load-dynamic"]
+
+[[test]]
+name = "cuda_resize_consistency"
+path = "tests/cuda_resize_consistency.rs"
+required-features = ["cuda-runtime", "ort-load-dynamic"]
+
+
+
+[[example]]
+name = "imshow"
+path = "examples/viewer/imshow.rs"
+required-features = ["video", "viewer"]
+
+[[example]]
+name = "annotator"
+required-features = ["annotator"]
+
+[[example]]
+name = "object-detection"
+path = "examples/object-detection/main.rs"
+required-features = ["vision", "annotator"]
+
+[[example]]
+name = "image-classification"
+path = "examples/image-classification/main.rs"
+required-features = ["vision", "annotator"]
+
+[[example]]
+name = "image-segmentation"
+path = "examples/image-segmentation/main.rs"
+required-features = ["vision", "annotator"]
+
+[[example]]
+name = "birefnet"
+path = "examples/birefnet/main.rs"
+required-features = ["vision", "annotator"]
+
+[[example]]
+name = "pose-estimation"
+path = "examples/pose-estimation/main.rs"
+required-features = ["vision", "annotator"]
+
+[[example]]
+name = "depth-estimation"
+path = "examples/depth-estimation/main.rs"
+required-features = ["vision", "annotator"]
+
+[[example]]
+name = "image-matting"
+path = "examples/image-matting/main.rs"
+required-features = ["vision", "annotator"]
+
+[[example]]
+name = "background-removal"
+path = "examples/background-removal/main.rs"
+required-features = ["vision", "annotator"]
+
+[[example]]
+name = "super-resolution"
+path = "examples/super-resolution/main.rs"
+required-features = ["vision", "annotator"]
+
+[[example]]
+name = "ocr"
+path = "examples/ocr/main.rs"
+required-features = ["vision", "vlm", "annotator"]
+
+[[example]]
+name = "open-set-detection"
+path = "examples/open-set-detection/main.rs"
+required-features = ["vision", "vlm", "annotator"]
+
+[[example]]
+name = "open-set-segmentation"
+path = "examples/open-set-segmentation/main.rs"
+required-features = ["vision", "vlm", "annotator"]
+
+[[example]]
+name = "bytetrack"
+path = "examples/bytetrack/main.rs"
+required-features = ["mot", "viewer", "video"]
+
+[[example]]
+name = "embedding"
+path = "examples/embedding/main.rs"
+required-features = ["vision", "vlm", "annotator"]
+
+[[example]]
+name = "vlm"
+path = "examples/vlm/main.rs"
+required-features = ["vision", "vlm", "annotator"]
+
+[[example]]
+name = "yolo"
+path = "examples/yolo/main.rs"
+required-features = ["vision", "annotator"]
+
+[[example]]
+name = "sapiens"
+path = "examples/sapiens/main.rs"
+required-features = ["vision", "annotator"]
+
+[[example]]
+name = "gaze-estimation"
+path = "examples/gaze-estimation/main.rs"
+required-features = ["vision", "annotator", "video"]

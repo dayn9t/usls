@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "dev", "x" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lints:
+    name: Clippy Matrix (${{ matrix.feature }})
+    runs-on: ubuntu-latest
+    container: jrottenberg/ffmpeg:7.1-ubuntu
+    strategy:
+      fail-fast: false
+      matrix:
+        feature:
+          - "all-features"
+          - ""
+          - "vision"
+          - "vlm"
+          - "ort-download-binaries"
+          - "ort-load-dynamic"
+          - "video"
+          - "viewer"
+          - "annotator"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing
+          DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libssl-dev ca-certificates clang curl pkg-config protobuf-compiler
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Rustfmt
+        if: matrix.feature == 'all-features'
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: |
+          if [ "${{ matrix.feature }}" = "all-features" ]; then
+            cargo clippy --no-default-features --features "all-models,video,viewer,annotator,hf-hub,ort-download-binaries,ort-load-dynamic" --all-targets -- -D warnings
+          elif [ "${{ matrix.feature }}" = "" ]; then
+            cargo clippy --no-default-features --all-targets -- -D warnings
+          else
+            cargo clippy --no-default-features --features "${{ matrix.feature }}" --all-targets -- -D warnings
+          fi
+
+  check:
+    name: cargo-check
+    runs-on: ubuntu-latest
+    container: jrottenberg/ffmpeg:7.1-ubuntu
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing
+          DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libssl-dev ca-certificates clang curl pkg-config protobuf-compiler
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Check
+        run: cargo check --no-default-features --features "all-models,video,viewer,annotator,hf-hub,ort-download-binaries,ort-load-dynamic" --all-targets
+
+  test:
+    name: cargo-test
+    runs-on: ubuntu-latest
+    container: jrottenberg/ffmpeg:7.1-ubuntu
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing
+          DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libssl-dev ca-certificates clang curl pkg-config protobuf-compiler
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Test
+        run: cargo +nightly test --no-default-features --features "all-models,video,viewer,annotator,hf-hub,ort-download-binaries,ort-load-dynamic" --all-targets
+
+  build-linux:
+    needs: test
+    name: cargo build / linux / ffmpeg ${{ matrix.ffmpeg_version }}
+    runs-on: ubuntu-latest
+    container: jrottenberg/ffmpeg:${{ matrix.ffmpeg_version }}-ubuntu
+
+    strategy:
+      matrix:
+        ffmpeg_version: [ "5.0", "5.1", "6.0", "6.1", "7.0", "7.1" ]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing
+          DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libssl-dev ca-certificates clang curl pkg-config protobuf-compiler
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --no-default-features --features "all-models,video,viewer,annotator,hf-hub,ort-download-binaries,ort-load-dynamic"

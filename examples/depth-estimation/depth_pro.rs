@@ -1,0 +1,29 @@
+use anyhow::Result;
+use clap::Parser;
+use usls::{Config, DType, Device};
+
+#[derive(Parser, Debug)]
+pub struct DepthProArgs {
+    /// Device: cpu, cuda:0, mps, coreml, openvino:CPU, etc.
+    #[arg(long, global = true, default_value = "cpu")]
+    pub device: Device,
+
+    /// Processor device (for pre/post processing)
+    #[arg(long, global = true, default_value = "cpu")]
+    pub processor_device: Device,
+
+    /// Dtype: fp32, fp16, q4f16, etc.
+    #[arg(long, default_value = "q4f16")]
+    pub dtype: DType,
+}
+
+pub fn config(args: &DepthProArgs) -> Result<Config> {
+    let config = Config::depth_pro()
+        .with_dtype_all(args.dtype)
+        .with_device_all(args.device)
+        .with_batch_size_min_opt_max_all(1, 1, 1)
+        .with_num_dry_run_all(0)
+        .with_image_processor_device(args.processor_device);
+
+    Ok(config)
+}
