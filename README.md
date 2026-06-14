@@ -24,6 +24,23 @@
 </p>
 
 
+## 🔀 Fork Differences vs. Upstream
+
+> **Upstream:** [`jamjamjon/usls`](https://github.com/jamjamjon/usls) · **Fork base:** `v0.2.0-alpha.3`
+
+This fork diverges from upstream in two ways that remain **unmerged**:
+
+| | This fork (`dayn9t/usls`) | Upstream `main` (`alpha.4`) |
+|---|---|---|
+| **`fuse_conv_bias` default** (CUDA EP) | ✅ `true` — Conv+Bias fusion on by default, fewer kernel launches, faster CUDA inference | ❌ `false` |
+| **HuggingFace Hub downloader (`hf-hub`)** | ✅ Kept — pull models via the HF Hub API (`ApiRepo` / `ApiBuilder`) | ❌ Removed — replaced by direct `ureq` fetch of `…/resolve/main/…` URLs |
+
+- `fuse_conv_bias`: see [`src/ort/ep_config.rs`](src/ort/ep_config.rs)
+- HF Hub: see [`src/dataloader/hub.rs`](src/dataloader/hub.rs), enable the `hf-hub` feature
+
+> ℹ️ **Already adopted upstream.** The original reason for forking — bumping `ort` to `2.0.0-rc.12` and adding **CUDA 13** support (`cuda-13000` / `cuda-13010`) — has since landed in upstream `alpha.4`, so those two no longer differ.
+
+
 ## 🌟 Highlights
 
 - **⚡ High Performance**: Multi-threading, SIMD, and CUDA-accelerated processing
