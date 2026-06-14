@@ -29,4 +29,4 @@ scripts/**/output*.png
 scripts/**/onnx-models/
 
 # Docs
-site/
+*.tmp
