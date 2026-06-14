@@ -26,6 +26,11 @@
 
 ## 🔀 Fork Differences vs. Upstream
 
+<sub>🌐 Language · 语言：点击下方标题展开 · click a heading to expand</sub>
+
+<details open>
+<summary><b>🇬🇧 English</b></summary>
+
 > **Upstream:** [`jamjamjon/usls`](https://github.com/jamjamjon/usls) · **Fork base:** `v0.2.0-alpha.3`
 
 This fork diverges from upstream in two ways that remain **unmerged**:
@@ -39,6 +44,27 @@ This fork diverges from upstream in two ways that remain **unmerged**:
 - HF Hub: see [`src/dataloader/hub.rs`](src/dataloader/hub.rs), enable the `hf-hub` feature
 
 > ℹ️ **Already adopted upstream.** The original reason for forking — bumping `ort` to `2.0.0-rc.12` and adding **CUDA 13** support (`cuda-13000` / `cuda-13010`) — has since landed in upstream `alpha.4`, so those two no longer differ.
+
+</details>
+
+<details>
+<summary><b>🇨🇳 中文</b></summary>
+
+> **上游：** [`jamjamjon/usls`](https://github.com/jamjamjon/usls) · **Fork 基线：** `v0.2.0-alpha.3`
+
+本 fork 与上游有两处**尚未合并**的差异：
+
+| | 本 fork（`dayn9t/usls`） | 上游 `main`（`alpha.4`） |
+|---|---|---|
+| **`fuse_conv_bias` 默认值**（CUDA EP） | ✅ `true` — 默认开启 Conv+Bias 算子融合，减少 kernel launch 次数，CUDA 推理更快 | ❌ `false` |
+| **HuggingFace Hub 下载器（`hf-hub`）** | ✅ 保留 — 通过 HF Hub API（`ApiRepo` / `ApiBuilder`）拉取模型 | ❌ 已移除 — 改用 `ureq` 直接下载 `…/resolve/main/…` 链接 |
+
+- `fuse_conv_bias`：见 [`src/ort/ep_config.rs`](src/ort/ep_config.rs)
+- HF Hub：见 [`src/dataloader/hub.rs`](src/dataloader/hub.rs)，需启用 `hf-hub` feature
+
+> ℹ️ **已被上游采纳。** 当初 fork 的初衷 —— 将 `ort` 升级到 `2.0.0-rc.12` 并新增 **CUDA 13** 支持（`cuda-13000` / `cuda-13010`）—— 后来都进入了上游 `alpha.4`，因此这两点目前已无差异。
+
+</details>
 
 
 ## 🌟 Highlights
