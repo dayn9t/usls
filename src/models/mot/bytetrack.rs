@@ -158,7 +158,7 @@ impl ByteTracker {
                 track.update(det, self.frame_id);
                 activated_stracks.push(track.clone());
             } else {
-                track.re_activate(det, self.frame_id, false);
+                track.re_activate(det, self.frame_id, false, &mut self.track_id_count);
                 refind_stracks.push(track.clone());
             }
         }
@@ -187,7 +187,7 @@ impl ByteTracker {
                 track.update(det, self.frame_id);
                 activated_stracks.push(track.clone());
             } else {
-                track.re_activate(det, self.frame_id, false);
+                track.re_activate(det, self.frame_id, false, &mut self.track_id_count);
                 refind_stracks.push(track.clone());
             }
         }
@@ -227,7 +227,7 @@ impl ByteTracker {
             if track.score() < self.new_track_thresh {
                 continue;
             }
-            track.activate(self.kalman_filter.clone(), self.frame_id);
+            track.activate(self.kalman_filter.clone(), self.frame_id, &mut self.track_id_count);
             activated_stracks.push(track.clone());
         }
 
@@ -283,9 +283,8 @@ impl ByteTracker {
         self
     }
 
-    /// Resets the global track ID counter
+    /// Resets the per-instance track ID counter
     pub fn reset_id(&mut self) {
-        STrack::reset_id();
         self.track_id_count = 0;
     }
 
@@ -668,9 +667,6 @@ mod tests {
 
     #[test]
     fn test_update() {
-        // Reset global track ID counter
-        STrack::reset_id();
-
         let mut tracker = ByteTracker::default().with_max_age(30);
 
         let hbbs = vec![
@@ -699,9 +695,6 @@ mod tests {
 
     #[test]
     fn test_frame_id_starts_at_one() {
-        // Reset global track ID counter
-        STrack::reset_id();
-
         let mut tracker = ByteTracker::default().with_max_age(30);
         assert_eq!(tracker.frame_id, 0, "Initial frame_id should be 0");
 
@@ -716,9 +709,6 @@ mod tests {
 
     #[test]
     fn test_detection_splitting() {
-        // Reset global track ID counter
-        STrack::reset_id();
-
         let mut tracker = ByteTracker::default().with_max_age(30);
 
         // Create detections with various scores
@@ -743,9 +733,6 @@ mod tests {
 
     #[test]
     fn test_track_persistence() {
-        // Reset global track ID counter
-        STrack::reset_id();
-
         let mut tracker = ByteTracker::default().with_max_age(30);
 
         // Frame 1: Create initial track
@@ -773,5 +760,16 @@ mod tests {
             (pos2.0 - pos1.0).abs() > 0.0 || (pos2.1 - pos1.1).abs() > 0.0,
             "Track position should update! pos1={pos1:?}, pos2={pos2:?}"
         );
+    }
+
+    #[test]
+    fn two_instances_have_independent_track_ids() {
+        let mut t1 = ByteTracker::default();
+        let mut t2 = ByteTracker::default();
+        let hbbs = vec![Hbb::from_xywh(0.0, 0.0, 10.0, 10.0).with_confidence(0.9)];
+        let r1 = t1.update(&hbbs).unwrap();
+        let r2 = t2.update(&hbbs).unwrap();
+        assert_eq!(r1[0].track_id().unwrap(), 1);
+        assert_eq!(r2[0].track_id().unwrap(), 1, "second instance must restart from 1");
     }
 }

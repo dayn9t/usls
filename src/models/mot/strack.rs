@@ -1,9 +1,4 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
-
 use crate::{Hbb, KalmanFilterXYAH, StateCov, StateMean};
-
-/// Global track ID counter for unique track identification
-pub(crate) static GLOBAL_TRACK_ID: AtomicUsize = AtomicUsize::new(0);
 
 /// Track state enumeration
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -165,9 +160,9 @@ impl STrack {
     }
 
     /// Activates a new track
-    pub fn activate(&mut self, kalman_filter: KalmanFilterXYAH, frame_id: usize) {
+    pub fn activate(&mut self, kalman_filter: KalmanFilterXYAH, frame_id: usize, id_counter: &mut usize) {
         self.kalman_filter = kalman_filter;
-        self.track_id = Self::next_id();
+        self.track_id = Self::next_id(id_counter);
 
         // Initialize Kalman filter with detection bbox
         let (cx, cy, a, h) = self.hbb.cxcyah();
@@ -188,7 +183,7 @@ impl STrack {
     }
 
     /// Re-activates a lost track
-    pub fn re_activate(&mut self, new_track: &STrack, frame_id: usize, new_id: bool) {
+    pub fn re_activate(&mut self, new_track: &STrack, frame_id: usize, new_id: bool, id_counter: &mut usize) {
         // Use detection bbox as measurement
         let (cx, cy, a, h) = new_track.hbb.cxcyah();
         let measurement = [cx, cy, a, h];
@@ -204,7 +199,7 @@ impl STrack {
         self.frame_id = frame_id;
 
         if new_id {
-            self.track_id = Self::next_id();
+            self.track_id = Self::next_id(id_counter);
         }
 
         // Update bbox from Kalman filter state and detection metadata
@@ -212,18 +207,9 @@ impl STrack {
     }
 
     /// Generates next unique track ID
-    pub fn next_id() -> usize {
-        GLOBAL_TRACK_ID.fetch_add(1, Ordering::SeqCst) + 1
-    }
-
-    /// Resets global track ID counter
-    pub fn reset_id() {
-        GLOBAL_TRACK_ID.store(0, Ordering::SeqCst);
-    }
-
-    /// Returns current track ID counter value
-    pub fn get_current_count() -> usize {
-        GLOBAL_TRACK_ID.load(Ordering::SeqCst)
+    pub fn next_id(counter: &mut usize) -> usize {
+        *counter += 1;
+        *counter
     }
 
     /// Returns the most recent frame ID
