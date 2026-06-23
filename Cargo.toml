@@ -40,9 +40,12 @@ fast_image_resize = { version = "5.5.0", default-features = false, features = ["
 minifb = { version = "0.28.0", optional = true }
 video-rs = { version = "0.10.5", features = ["ndarray"], optional = true }
 ndarray-npy = { version = "0.10", optional = true  }
+# load-dynamic: 运行时 dlopen libonnxruntime.so（由 ORT_DYLIB_PATH 指向自编 sm_89/120a/121 库）。
+# 不再用 download-binaries/copy-dylibs —— 避免构建期下载 pyke 预编译库并在可执行旁留指向 ~/.cache 的 symlink。
 ort = { version = "=2.0.0-rc.12", default-features = false, features = [
   "tls-rustls",
-  "copy-dylibs",
+  "load-dynamic",
+  "api-24",
   "half",
   "std",
 ] }
