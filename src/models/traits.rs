@@ -1,7 +1,7 @@
 use anyhow::Result;
 use std::ops::{Deref, DerefMut};
 
-use crate::{Config, Engines, Y};
+use crate::{Config, Engines, Module, Y};
 
 /// The core Model trait for unified model inference.
 ///
@@ -189,6 +189,18 @@ impl<M: Model> Runtime<M> {
     /// Gets a mutable reference to the engines.
     pub fn engines_mut(&mut self) -> &mut Engines {
         &mut self.engines
+    }
+
+    /// Reads a custom ONNX metadata key from the model's primary engine.
+    ///
+    /// Delegates to [`Engine::try_fetch`], which reads
+    /// `session.metadata().custom(key)`. Returns `None` when the model has no
+    /// engine for [`Module::Model`] or the key is absent. Used by ml-vision to
+    /// read the `ml.model_contract` metadata embedded by jxl.
+    pub fn try_fetch(&self, key: &str) -> Option<String> {
+        self.engines
+            .get(&Module::Model)
+            .and_then(|engine| engine.try_fetch(key))
     }
 
     /// Provides mutable access to both the model and engines.
