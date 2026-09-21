@@ -4,7 +4,7 @@ use half::{bf16, f16};
 use ndarray::{Array, IxDyn};
 use ort::{
     execution_providers::ExecutionProvider,
-    session::{builder::GraphOptimizationLevel, SessionInputs, Session, SessionInputValue},
+    session::{builder::GraphOptimizationLevel, Session, SessionInputValue, SessionInputs},
     value::{DynValue, TensorElementType, Value},
 };
 use prost::Message;

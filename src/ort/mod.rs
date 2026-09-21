@@ -7,8 +7,8 @@ mod engines;
 mod ep_config;
 mod iiix;
 mod inputs;
-mod min_opt_max;
 mod metadata;
+mod min_opt_max;
 #[allow(clippy::all)]
 pub(crate) mod onnx;
 mod x;
@@ -20,7 +20,7 @@ pub use engine::*;
 pub use engines::*;
 pub use ep_config::*;
 pub(crate) use iiix::*;
-pub use metadata::*;
 pub use inputs::*;
+pub use metadata::*;
 pub use min_opt_max::*;
 pub use xs::*;

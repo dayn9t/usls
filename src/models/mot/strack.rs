@@ -160,7 +160,12 @@ impl STrack {
     }
 
     /// Activates a new track
-    pub fn activate(&mut self, kalman_filter: KalmanFilterXYAH, frame_id: usize, id_counter: &mut usize) {
+    pub fn activate(
+        &mut self,
+        kalman_filter: KalmanFilterXYAH,
+        frame_id: usize,
+        id_counter: &mut usize,
+    ) {
         self.kalman_filter = kalman_filter;
         self.track_id = Self::next_id(id_counter);
 
@@ -183,7 +188,13 @@ impl STrack {
     }
 
     /// Re-activates a lost track
-    pub fn re_activate(&mut self, new_track: &STrack, frame_id: usize, new_id: bool, id_counter: &mut usize) {
+    pub fn re_activate(
+        &mut self,
+        new_track: &STrack,
+        frame_id: usize,
+        new_id: bool,
+        id_counter: &mut usize,
+    ) {
         // Use detection bbox as measurement
         let (cx, cy, a, h) = new_track.hbb.cxcyah();
         let measurement = [cx, cy, a, h];

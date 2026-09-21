@@ -227,7 +227,11 @@ impl ByteTracker {
             if track.score() < self.new_track_thresh {
                 continue;
             }
-            track.activate(self.kalman_filter.clone(), self.frame_id, &mut self.track_id_count);
+            track.activate(
+                self.kalman_filter.clone(),
+                self.frame_id,
+                &mut self.track_id_count,
+            );
             activated_stracks.push(track.clone());
         }
 
@@ -770,6 +774,10 @@ mod tests {
         let r1 = t1.update(&hbbs).unwrap();
         let r2 = t2.update(&hbbs).unwrap();
         assert_eq!(r1[0].track_id().unwrap(), 1);
-        assert_eq!(r2[0].track_id().unwrap(), 1, "second instance must restart from 1");
+        assert_eq!(
+            r2[0].track_id().unwrap(),
+            1,
+            "second instance must restart from 1"
+        );
     }
 }
