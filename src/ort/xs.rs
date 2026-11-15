@@ -95,7 +95,7 @@ impl<'s> Xs<'s> {
 
         let v = &self.outputs[index];
 
-        if let Ok(tensor) = v.downcast_ref::<ort::value::DynTensorValueType>() {
+        if let Ok(tensor) = v.view().downcast::<ort::value::DynTensorValueType>() {
             if !tensor.memory_info().is_cpu_accessible() {
                 if let Some(host) = self.ensure_host(index) {
                     if let Ok(arr) = host.try_extract_array::<T>() {
